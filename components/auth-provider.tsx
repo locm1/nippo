@@ -1,9 +1,9 @@
 'use client'
 
 import { createClient } from '@/lib/supabase-client'
-import { User } from '@supabase/supabase-js'
+import { User, AuthChangeEvent, Session } from '@supabase/supabase-js'
 import { useRouter, usePathname } from 'next/navigation'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo } from 'react'
 
 interface AuthContextType {
   user: User | null
@@ -30,25 +30,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
-  const supabase = createClient()
+  
+  // SupabaseクライアントをuseMemoで最適化
+  const supabase = useMemo(() => createClient(), [])
 
+  // 認証状態の初期取得とリスナー設定（一度だけ実行）
   useEffect(() => {
+    let isMounted = true
+
     const getUser = async () => {
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
-        if (error) {
-          console.warn('認証エラー:', error)
-          // 認証エラーの場合は一度サインアウトしてクリアする
-          await supabase.auth.signOut()
-          setUser(null)
-        } else {
-          setUser(user)
+        if (isMounted) {
+          if (error) {
+            console.warn('認証エラー:', error)
+            setUser(null)
+          } else {
+            setUser(user)
+          }
+          setLoading(false)
         }
       } catch (error) {
         console.error('認証取得エラー:', error)
-        setUser(null)
-      } finally {
-        setLoading(false)
+        if (isMounted) {
+          setUser(null)
+          setLoading(false)
+        }
       }
     }
 
@@ -56,23 +63,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      const currentUser = user
-      setUser(session?.user ?? null)
-      setLoading(false)
-      
-      // 初回サインイン時かつ認証ページにいる場合のみダッシュボードにリダイレクト
-      if (event === 'SIGNED_IN' && !currentUser && pathname === '/auth') {
-        router.push('/dashboard')
-      }
-      // サインアウト時は常に認証ページにリダイレクト
-      if (event === 'SIGNED_OUT') {
-        router.push('/auth')
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+      if (isMounted) {
+        setUser(session?.user ?? null)
+        setLoading(false)
       }
     })
 
-    return () => subscription.unsubscribe()
-  }, [router, pathname, supabase.auth, user])
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
+  }, [supabase])
+
+  // リダイレクト処理（ユーザー状態とパスの変更時）
+  useEffect(() => {
+    if (loading) return
+
+    if (user && pathname === '/auth') {
+      router.push('/dashboard')
+    } else if (!user && pathname !== '/auth' && pathname !== '/' && !pathname.startsWith('/share/')) {
+      router.push('/auth')
+    }
+  }, [user, pathname, loading, router])
 
   const signOut = async () => {
     await supabase.auth.signOut()
