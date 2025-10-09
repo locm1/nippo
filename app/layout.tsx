@@ -4,7 +4,7 @@ import { AuthProvider } from '@/components/auth-provider'
 import Header from '@/components/header'
 
 export const metadata: Metadata = {
-  title: "日報アプリ",
+  title: "日報太郎",
   description: "日報を簡単に作成・管理できるアプリケーション",
 };
 

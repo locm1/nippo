@@ -294,7 +294,7 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
                 href="/auth"
                 className="ml-2 text-blue-600 hover:text-blue-800 underline font-medium"
               >
-                日報アプリにログインして自分の日報を作成する
+                日報太郎にログインして自分の日報を作成する
               </a>
             </p>
           </div>

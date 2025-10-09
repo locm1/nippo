@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         </p>
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
         <p style="color: #999; font-size: 12px;">
-          このメールは日報アプリから自動送信されました。
+          このメールは日報太郎から自動送信されました。
         </p>
       </div>
     `
