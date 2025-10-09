@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase-server'
 import { redirect, notFound } from 'next/navigation'
 import NippoForm from '@/components/nippo-form'
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic'
+
 export default async function EditNippoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
