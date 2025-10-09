@@ -1,5 +1,8 @@
 import NippoDetail from '@/components/nippo-detail'
 
+// 動的レンダリングを強制
+export const dynamic = 'force-dynamic'
+
 export default async function SharedNippoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
 
