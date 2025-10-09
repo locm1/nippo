@@ -22,7 +22,7 @@ export default function AuthComponent() {
         <Auth
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
-          providers={['google']}
+          providers={[]}
           redirectTo={redirectTo}
           localization={{
             variables: {
