@@ -34,6 +34,7 @@ export default function NippoForm({ initialData }: NippoFormProps) {
   const [isPreview, setIsPreview] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
+  const [isComposing, setIsComposing] = useState(false)
 
   const uploadImage = useCallback(async (file: File): Promise<string | null> => {
     if (!user) {
@@ -101,7 +102,7 @@ export default function NippoForm({ initialData }: NippoFormProps) {
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isComposing) {
       const textarea = e.currentTarget
       const cursorPosition = textarea.selectionStart
       const textBeforeCursor = content.slice(0, cursorPosition)
@@ -145,6 +146,14 @@ export default function NippoForm({ initialData }: NippoFormProps) {
     }
   }
 
+  const handleCompositionStart = () => {
+    setIsComposing(true)
+  }
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false)
+  }
+
   const handlePaste = async (e: React.ClipboardEvent) => {
     const items = e.clipboardData?.items
     if (!items) return
@@ -178,8 +187,28 @@ export default function NippoForm({ initialData }: NippoFormProps) {
     }
   }
 
+  // 改行を自動的にMarkdown形式に変換する関数
+  const processContentForMarkdown = useCallback((text: string): string => {
+    return text
+      .split('\n')
+      .map(line => {
+        // 既にスペース2個で終わっている行はそのまま
+        if (line.endsWith('  ')) {
+          return line
+        }
+        // 空行はそのまま
+        if (line.trim() === '') {
+          return line
+        }
+        // その他の行にはスペース2個を追加
+        return line + '  '
+      })
+      .join('\n')
+  }, [])
+
   // プレビューコンテンツをメモ化してパフォーマンス向上
   const previewContent = useMemo(() => {
+    const processedContent = processContentForMarkdown(content)
     return (
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
@@ -263,10 +292,10 @@ export default function NippoForm({ initialData }: NippoFormProps) {
           ),
         }}
       >
-        {content || '*内容が入力されると、ここにプレビューが表示されます*'}
+        {processedContent || '*内容が入力されると、ここにプレビューが表示されます*'}
       </ReactMarkdown>
     )
-  }, [content])
+  }, [content, processContentForMarkdown])
 
   const handleSave = async () => {
     if (!user || !content.trim()) return
@@ -274,8 +303,9 @@ export default function NippoForm({ initialData }: NippoFormProps) {
     setIsSaving(true)
 
     try {
+      const processedContent = processContentForMarkdown(content.trim())
       const nippoData = {
-        content: content.trim(),
+        content: processedContent,
         is_public: isPublic,
         images: images.length > 0 ? images : null,
         report_date: reportDate,
@@ -421,12 +451,15 @@ export default function NippoForm({ initialData }: NippoFormProps) {
               onChange={(e) => setContent(e.target.value)}
               onPaste={handlePaste}
               onKeyDown={handleKeyDown}
+              onCompositionStart={handleCompositionStart}
+              onCompositionEnd={handleCompositionEnd}
               className="w-full h-96 p-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none font-mono text-sm"
             />
             <div className="text-xs text-gray-500 mt-2 space-y-1">
               <p>• クリップボードから画像を貼り付けることができます (Ctrl+V / Cmd+V)</p>
-              <p>• Enterで改行時に自動でMarkdown改行用のスペース2個が追加されます</p>
+              <p>• Enterで改行時に自動でMarkdown改行用のスペース2個が追加されます（IME変換中は除く）</p>
               <p>• Shift+Enterで通常の改行ができます</p>
+              <p>• 保存時に全ての改行が自動的にMarkdown形式に変換されます</p>
               <p>• Markdown記法: # 見出し、**太字**、*斜体*、- リスト、`コード` など</p>
             </div>
           </div>
