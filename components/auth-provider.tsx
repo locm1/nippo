@@ -30,17 +30,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
-  
-  // ブラウザ環境でのみSupabaseクライアントを作成
-  const supabase = typeof window !== 'undefined' ? createClient() : null
+  const supabase = createClient()
 
   useEffect(() => {
     const getUser = async () => {
-      if (!supabase) {
-        setLoading(false)
-        return
-      }
-      
       try {
         const { data: { user }, error } = await supabase.auth.getUser()
         if (error) {
@@ -61,10 +54,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getUser()
 
-    if (!supabase) {
-      return
-    }
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -83,12 +72,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [router, pathname, supabase, user])
+  }, [router, pathname, supabase.auth, user])
 
   const signOut = async () => {
-    if (supabase) {
-      await supabase.auth.signOut()
-    }
+    await supabase.auth.signOut()
   }
 
   return (
