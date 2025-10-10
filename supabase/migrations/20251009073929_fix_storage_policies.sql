@@ -33,7 +33,7 @@ using (
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
--- Ensure the bucket exists and is public
-insert into storage.buckets (id, name, public) 
-values ('nippo-images', 'nippo-images', true)
-on conflict (id) do update set public = true;
+-- Ensure the bucket exists
+insert into storage.buckets (id, name) 
+values ('nippo-images', 'nippo-images')
+on conflict (id) do nothing;

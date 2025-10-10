@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from './auth-provider'
 import { LogOut, User, ChevronDown } from 'lucide-react'
 
 export default function Header() {
   const { user, signOut } = useAuth()
+  const router = useRouter()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -30,9 +32,12 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <h1 className="text-xl font-semibold text-gray-900">
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
+            >
               日報太郎
-            </h1>
+            </button>
           </div>
           
           <div className="flex items-center space-x-4">

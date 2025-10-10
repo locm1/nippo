@@ -57,7 +57,7 @@ create trigger handle_nippo_updated_at
   for each row execute function handle_updated_at();
 
 -- Create storage bucket for nippo images
-insert into storage.buckets (id, name, public) values ('nippo-images', 'nippo-images', true);
+insert into storage.buckets (id, name) values ('nippo-images', 'nippo-images');
 
 -- Create storage policies
 create policy "Users can upload nippo images" on storage.objects

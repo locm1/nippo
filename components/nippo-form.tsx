@@ -1,15 +1,16 @@
 'use client'
 
-import { useState, useRef, useCallback, useMemo } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
 import { createClient } from '@/lib/supabase-client'
 import { useAuth } from './auth-provider'
-import { Save, Eye, EyeOff, Upload, Image as ImageIcon, Calendar } from 'lucide-react'
+import { Save, Eye, EyeOff, Upload, Image as ImageIcon, Calendar, FileText, ChevronDown } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { getTodayDate, formatDateToJapanese, isToday } from '@/lib/date-utils'
+import { Template } from '@/types/template'
 
 interface NippoFormProps {
   initialData?: {
@@ -35,6 +36,32 @@ export default function NippoForm({ initialData }: NippoFormProps) {
   const [isSaving, setIsSaving] = useState(false)
   const [uploadingImages, setUploadingImages] = useState<Set<string>>(new Set())
   const [isComposing, setIsComposing] = useState(false)
+  const [templates, setTemplates] = useState<Template[]>([])
+  const [showTemplateSelect, setShowTemplateSelect] = useState(false)
+
+  // テンプレート取得
+  const fetchTemplates = useCallback(async () => {
+    if (!user) return
+
+    try {
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setTemplates(data || [])
+    } catch (error) {
+      console.error('テンプレート取得エラー:', error)
+    }
+  }, [user, supabase])
+
+  // コンポーネント初期化時にテンプレートを取得
+  useEffect(() => {
+    if (user) {
+      fetchTemplates()
+    }
+  }, [user, fetchTemplates])
 
   const uploadImage = useCallback(async (file: File): Promise<string | null> => {
     if (!user) {
@@ -152,6 +179,14 @@ export default function NippoForm({ initialData }: NippoFormProps) {
 
   const handleCompositionEnd = () => {
     setIsComposing(false)
+  }
+
+  const applyTemplate = (template: Template) => {
+    if (content.trim() && !confirm('現在の内容を上書きしてテンプレートを適用しますか？')) {
+      return
+    }
+    setContent(template.content)
+    setShowTemplateSelect(false)
   }
 
   const handlePaste = async (e: React.ClipboardEvent) => {
@@ -345,17 +380,52 @@ export default function NippoForm({ initialData }: NippoFormProps) {
       <div className="bg-white rounded-lg shadow-md p-6">
 
 
-        <div className="mb-6 flex items-center space-x-3">
-          <Calendar className="w-5 h-5 text-gray-500" />
-          <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">報告日：</label>
-            <input
-              type="date"
-              value={reportDate}
-              onChange={(e) => setReportDate(e.target.value)}
-              className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+        <div className="mb-6 space-y-4">
+          <div className="flex items-center space-x-3">
+            <Calendar className="w-5 h-5 text-gray-500" />
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium text-gray-700">報告日：</label>
+              <input
+                type="date"
+                value={reportDate}
+                onChange={(e) => setReportDate(e.target.value)}
+                className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
+
+          {/* テンプレート選択 */}
+          {templates.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowTemplateSelect(!showTemplateSelect)}
+                className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                <FileText className="h-4 w-4" />
+                <span>テンプレートから作成</span>
+                <ChevronDown className={`h-4 w-4 transform transition-transform ${showTemplateSelect ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {showTemplateSelect && (
+                <div className="absolute top-full left-0 mt-1 w-full max-w-md bg-white border border-gray-300 rounded-md shadow-lg z-10">
+                  <div className="max-h-60 overflow-y-auto">
+                    {templates.map((template) => (
+                      <button
+                        key={template.id}
+                        onClick={() => applyTemplate(template)}
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                      >
+                        <div className="font-medium text-gray-900">{template.name}</div>
+                        <div className="text-sm text-gray-500 mt-1 truncate">
+                          {template.content.split('\n')[0]}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* デスクトップレイアウト */}

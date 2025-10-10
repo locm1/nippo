@@ -147,13 +147,22 @@ export default function NippoList() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">日報一覧</h2>
         
-        <button
-          onClick={() => router.push('/nippo/new')}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          <span>新しい日報</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => router.push('/templates')}
+            className="flex items-center space-x-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            <span>テンプレート管理</span>
+          </button>
+          <button
+            onClick={() => router.push('/nippo/new')}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            <span>新しい日報</span>
+          </button>
+        </div>
       </div>
 
       <div className="mb-4">
