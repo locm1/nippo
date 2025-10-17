@@ -322,7 +322,7 @@ export default function TemplateManager() {
                     onCompositionEnd={handleCompositionEnd}
                     placeholder="## 今日やったこと&#10;- &#10;&#10;## 明日やること&#10;- &#10;&#10;## 所感&#10;"
                     rows={12}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-base resize-none"
                   />
                   <div className="text-xs text-gray-500 mt-2 space-y-1">
                     <p>• Enterで改行時に自動でMarkdown改行用のスペース2個が追加されます（IME変換中は除く）</p>
@@ -485,7 +485,7 @@ export default function TemplateManager() {
                           onCompositionStart={handleCompositionStart}
                           onCompositionEnd={handleCompositionEnd}
                           rows={12}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm resize-none"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-base resize-none"
                         />
                         <div className="text-xs text-gray-500 mt-2 space-y-1">
                           <p>• Enterで改行時に自動でMarkdown改行用のスペース2個が追加されます（IME変換中は除く）</p>
