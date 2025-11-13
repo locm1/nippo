@@ -9,12 +9,13 @@ import { createClient } from '@/lib/supabase-client'
 import { useAuth } from './auth-provider'
 import { Save, Eye, EyeOff, Upload, Image as ImageIcon, Calendar, FileText, ChevronDown } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
-import { getTodayDate, formatDateToJapanese, isToday } from '@/lib/date-utils'
+import { getTodayDate, formatDateToJapanese, isToday, generateNippoTitle } from '@/lib/date-utils'
 import { Template } from '@/types/template'
 
 interface NippoFormProps {
   initialData?: {
     id?: string
+    title?: string
     content: string
     is_public: boolean
     images?: string[]
@@ -28,6 +29,7 @@ export default function NippoForm({ initialData }: NippoFormProps) {
   const supabase = createClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
   
+  const [title, setTitle] = useState(initialData?.title || '')
   const [content, setContent] = useState(initialData?.content || '')
   const [isPublic, setIsPublic] = useState(initialData?.is_public || false)
   const [reportDate, setReportDate] = useState(initialData?.report_date || getTodayDate())
@@ -62,6 +64,13 @@ export default function NippoForm({ initialData }: NippoFormProps) {
       fetchTemplates()
     }
   }, [user, fetchTemplates])
+
+  // 初期ロード時または reportDate が変更されたときにデフォルトタイトルを設定
+  useEffect(() => {
+    if (!initialData?.title && reportDate) {
+      setTitle(generateNippoTitle(reportDate))
+    }
+  }, [reportDate, initialData?.title])
 
   const uploadImage = useCallback(async (file: File): Promise<string | null> => {
     if (!user) {
@@ -333,13 +342,14 @@ export default function NippoForm({ initialData }: NippoFormProps) {
   }, [content, processContentForMarkdown])
 
   const handleSave = async () => {
-    if (!user || !content.trim()) return
+    if (!user || !content.trim() || !title.trim()) return
 
     setIsSaving(true)
 
     try {
       const processedContent = processContentForMarkdown(content.trim())
       const nippoData = {
+        title: title.trim(),
         content: processedContent,
         is_public: isPublic,
         images: images.length > 0 ? images : null,
@@ -392,6 +402,17 @@ export default function NippoForm({ initialData }: NippoFormProps) {
                 className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">タイトル</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="日報のタイトルを入力してください"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+            />
           </div>
 
           {/* テンプレート選択 */}
@@ -555,7 +576,7 @@ export default function NippoForm({ initialData }: NippoFormProps) {
           </button>
           <button
             onClick={handleSave}
-            disabled={!content.trim() || isSaving}
+            disabled={!content.trim() || !title.trim() || isSaving}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save className="h-4 w-4" />

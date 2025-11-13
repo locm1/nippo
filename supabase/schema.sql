@@ -10,7 +10,8 @@ create table nippo (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
   user_id uuid references auth.users(id) on delete cascade not null,
-  images text[]
+  images text[],
+  report_date date default current_date not null
 );
 
 -- Create indexes for better performance

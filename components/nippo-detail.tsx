@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase-client'
 import { useAuth } from './auth-provider'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale/ja'
-import { generateNippoTitle } from '@/lib/date-utils'
 import { 
   ArrowLeft, 
   Edit, 
@@ -22,6 +21,7 @@ import {
 
 interface Nippo {
   id: string
+  title: string
   content: string
   is_public: boolean
   report_date: string
@@ -170,7 +170,7 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
           </div>
 
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
-            {generateNippoTitle(nippo.report_date)}
+            {nippo.title}
           </h1>
 
           <div className="flex items-center space-x-6 text-sm text-gray-500">

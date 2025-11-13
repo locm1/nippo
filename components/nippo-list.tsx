@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase-client'
 import { useAuth } from './auth-provider'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale/ja'
-import { generateNippoTitle } from '@/lib/date-utils'
 import { 
   Plus, 
   Edit, 
@@ -20,6 +19,7 @@ import {
 
 interface Nippo {
   id: string
+  title: string
   content: string
   is_public: boolean
   report_date: string
@@ -226,7 +226,7 @@ export default function NippoList() {
                   className="text-lg font-semibold text-gray-900 cursor-pointer hover:text-blue-600"
                   onClick={() => router.push(`/nippo/${nippo.id}`)}
                 >
-                  {generateNippoTitle(nippo.report_date)}
+                  {nippo.title}
                 </h3>
                 
                 <div className="flex items-center space-x-2">
