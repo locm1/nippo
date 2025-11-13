@@ -36,7 +36,7 @@ export default function Header() {
               onClick={() => router.push('/dashboard')}
               className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
             >
-              日報太郎
+              日報太郎 - 議事録もおまかせ！ -
             </button>
           </div>
           

@@ -151,7 +151,7 @@ export default function NippoList() {
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">日報一覧</h2>
+        <h2 className="text-2xl font-bold text-gray-900">作成した記事一覧</h2>
         
         <div className="flex items-center space-x-3">
           <button
