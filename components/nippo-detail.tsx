@@ -18,6 +18,7 @@ import {
   Calendar,
   Clock
 } from 'lucide-react'
+import Comments from './comments'
 
 interface Nippo {
   id: string
@@ -60,8 +61,11 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
       if (isSharedView) {
         query = query.eq('is_public', true)
       } else if (user) {
-        // ログインユーザーは自分の日報のみ
-        query = query.eq('user_id', user.id)
+        // ログインユーザーは自分の日報または公開日報
+        query = query.or(`user_id.eq.${user.id},is_public.eq.true`)
+      } else {
+        // 未ログインユーザーは公開日報のみ
+        query = query.eq('is_public', true)
       }
 
       const { data, error } = await query.single()
@@ -283,6 +287,11 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
             </ReactMarkdown>
           </div>
         </div>
+      </div>
+
+      {/* コメントセクション */}
+      <div className="mt-6 bg-white rounded-lg shadow-md p-6">
+        <Comments nippoId={nippo.id} />
       </div>
 
       {isSharedView && (

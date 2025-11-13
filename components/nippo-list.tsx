@@ -29,7 +29,7 @@ interface Nippo {
 }
 
 export default function NippoList() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const supabase = createClient()
   
@@ -38,13 +38,15 @@ export default function NippoList() {
   const [filter, setFilter] = useState<'all' | 'public' | 'private'>('all')
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/auth')
+      return
+    }
+    
     if (user) {
       fetchNippos()
-      createDefaultTemplateIfNeeded(supabase, user.id).catch(error => {
-        console.error('NippoList: デフォルトテンプレート作成エラー:', error)
-      })
     }
-  }, [user])
+  }, [user, authLoading, router])
 
   const fetchNippos = async () => {
     if (!user) return

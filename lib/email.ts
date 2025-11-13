@@ -19,7 +19,6 @@ export async function sendEmail(to: string, subject: string, html: string) {
       html,
     })
     
-    console.log('メール送信成功:', info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error) {
     console.error('メール送信エラー:', error)

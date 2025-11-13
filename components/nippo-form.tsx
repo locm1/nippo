@@ -83,8 +83,6 @@ export default function NippoForm({ initialData }: NippoFormProps) {
     const filePath = `${user.id}/${fileName}`
 
     try {
-      console.log('画像アップロード開始:', { fileName, filePath, userId: user.id })
-      
       const { data, error: uploadError } = await supabase.storage
         .from('nippo-images')
         .upload(filePath, file, {
@@ -98,13 +96,10 @@ export default function NippoForm({ initialData }: NippoFormProps) {
         return null
       }
 
-      console.log('アップロード成功:', data)
-
       const { data: publicData } = supabase.storage
         .from('nippo-images')
         .getPublicUrl(filePath)
 
-      console.log('公開URL取得:', publicData.publicUrl)
       return publicData.publicUrl
     } catch (error) {
       console.error('画像アップロードエラー:', error)

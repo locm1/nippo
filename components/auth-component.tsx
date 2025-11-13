@@ -4,14 +4,24 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { createClient } from '@/lib/supabase-client'
 import { useEffect, useState } from 'react'
+import { useAuth } from './auth-provider'
+import { useRouter } from 'next/navigation'
 
 export default function AuthComponent() {
   const supabase = createClient()
+  const { user, loading } = useAuth()
+  const router = useRouter()
   const [redirectTo, setRedirectTo] = useState('')
 
   useEffect(() => {
     setRedirectTo(`${window.location.origin}/auth/callback`)
   }, [])
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard')
+    }
+  }, [user, loading, router])
 
   return (
     <div className="max-w-md mx-auto mt-8">
