@@ -74,7 +74,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // 新規ユーザーの場合、デフォルトテンプレートを作成
         if (event === 'SIGNED_IN' && newUser) {
-          await createDefaultTemplateIfNeeded(supabase, newUser.id)
+          createDefaultTemplateIfNeeded(supabase, newUser.id).catch(error => {
+            console.error('AuthProvider: デフォルトテンプレート作成エラー:', error)
+          })
         }
       }
     })

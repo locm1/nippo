@@ -40,7 +40,9 @@ export default function NippoList() {
   useEffect(() => {
     if (user) {
       fetchNippos()
-      createDefaultTemplateIfNeeded(supabase, user.id)
+      createDefaultTemplateIfNeeded(supabase, user.id).catch(error => {
+        console.error('NippoList: デフォルトテンプレート作成エラー:', error)
+      })
     }
   }, [user])
 
