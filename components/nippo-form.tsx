@@ -31,7 +31,7 @@ export default function NippoForm({ initialData }: NippoFormProps) {
   
   const [title, setTitle] = useState(initialData?.title || '')
   const [content, setContent] = useState(initialData?.content || '')
-  const [isPublic, setIsPublic] = useState(initialData?.is_public || false)
+  const [isPublic, setIsPublic] = useState(initialData?.is_public ?? true)
   const [reportDate, setReportDate] = useState(initialData?.report_date || getTodayDate())
   const [images, setImages] = useState<string[]>(initialData?.images || [])
   const [isPreview, setIsPreview] = useState(false)
@@ -452,15 +452,29 @@ export default function NippoForm({ initialData }: NippoFormProps) {
         {/* デスクトップレイアウト */}
         <div className="mb-4 hidden sm:flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-                className="rounded"
-              />
-              <span className="text-sm">公開する</span>
-            </label>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm font-medium text-gray-700">公開設定：</span>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="visibility"
+                  checked={isPublic}
+                  onChange={() => setIsPublic(true)}
+                  className="text-blue-600"
+                />
+                <span className="text-sm">公開する</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="visibility"
+                  checked={!isPublic}
+                  onChange={() => setIsPublic(false)}
+                  className="text-blue-600"
+                />
+                <span className="text-sm">非公開</span>
+              </label>
+            </div>
 
             <button
               onClick={() => fileInputRef.current?.click()}
@@ -487,15 +501,31 @@ export default function NippoForm({ initialData }: NippoFormProps) {
 
         {/* モバイルレイアウト */}
         <div className="mb-4 sm:hidden space-y-3">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="rounded"
-            />
-            <span className="text-sm">公開する</span>
-          </label>
+          <div className="space-y-2">
+            <span className="text-sm font-medium text-gray-700">公開設定</span>
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="visibility-mobile"
+                  checked={isPublic}
+                  onChange={() => setIsPublic(true)}
+                  className="text-blue-600"
+                />
+                <span className="text-sm">公開する</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="visibility-mobile"
+                  checked={!isPublic}
+                  onChange={() => setIsPublic(false)}
+                  className="text-blue-600"
+                />
+                <span className="text-sm">非公開</span>
+              </label>
+            </div>
+          </div>
 
           <button
             onClick={() => fileInputRef.current?.click()}
