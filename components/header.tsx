@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from './auth-provider'
 import { LogOut, User, ChevronDown } from 'lucide-react'
+import NotificationBell from './notification-bell'
 
 export default function Header() {
   const { user, signOut } = useAuth()
@@ -41,6 +42,9 @@ export default function Header() {
           </div>
           
           <div className="flex items-center space-x-4">
+            {/* 通知ベル */}
+            <NotificationBell />
+            
             {/* ユーザーメニュー */}
             <div className="relative" ref={menuRef}>
               <button
