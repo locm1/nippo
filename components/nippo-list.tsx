@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase-client'
 import { useAuth } from './auth-provider'
 import { format } from 'date-fns'
 import { ja } from 'date-fns/locale/ja'
+import { createDefaultTemplateIfNeeded } from '@/lib/default-template'
 import { 
   Plus, 
   Edit, 
@@ -39,6 +40,7 @@ export default function NippoList() {
   useEffect(() => {
     if (user) {
       fetchNippos()
+      createDefaultTemplateIfNeeded(supabase, user.id)
     }
   }, [user])
 
@@ -61,6 +63,8 @@ export default function NippoList() {
       setLoading(false)
     }
   }
+
+
 
   const deleteNippo = async (id: string) => {
     if (!confirm('この日報を削除しますか？')) return
