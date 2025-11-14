@@ -30,13 +30,14 @@ export default function Header() {
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+          <div className="flex items-end gap-2">
             <button
               onClick={() => router.push(user ? '/dashboard' : '/')}
               className="text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors cursor-pointer"
             >
-              日報太郎 - 議事録もおまかせ！ -
+              日報太郎
             </button>
+            <p className="text-gray-500">議事録もおまかせ！</p>
           </div>
           
           <div className="flex items-center space-x-4">
