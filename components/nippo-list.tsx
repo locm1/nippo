@@ -26,6 +26,7 @@ interface Nippo {
   report_date: string
   created_at: string
   updated_at: string
+  stamp_count?: number
 }
 
 export default function NippoList() {

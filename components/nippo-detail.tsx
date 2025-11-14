@@ -19,6 +19,8 @@ import {
   Clock
 } from 'lucide-react'
 import Comments from './comments'
+import NippoStamps from './nippo-stamps'
+import { NippoStampGroup } from '@/types/nippo-stamp'
 
 interface Nippo {
   id: string
@@ -30,6 +32,7 @@ interface Nippo {
   updated_at: string
   user_id: string
   images?: string[]
+  stamps?: NippoStampGroup[]
 }
 
 interface NippoDetailProps {
@@ -76,12 +79,97 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
         return
       }
 
-      setNippo(data)
+      // スタンプ情報を取得
+      const stamps = await fetchStampsForNippo(nippoId)
+      
+      setNippo({
+        ...data,
+        stamps
+      })
     } catch (error) {
       console.error('日報取得エラー:', error)
       setNotFound(true)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchStampsForNippo = async (nippoId: string): Promise<NippoStampGroup[]> => {
+    try {
+      // スタンプデータを取得
+      const { data: stampsData, error: stampsError } = await supabase
+        .from('nippo_stamps')
+        .select(`
+          id,
+          nippo_id,
+          user_id,
+          emoji,
+          created_at
+        `)
+        .eq('nippo_id', nippoId)
+        .order('created_at', { ascending: true })
+
+      if (stampsError) {
+        console.error('スタンプデータ取得エラー:', stampsError)
+        return []
+      }
+
+      if (!stampsData || stampsData.length === 0) {
+        return []
+      }
+
+      // スタンプユーザーのプロフィール情報を取得
+      const stampUserIds = [...new Set(stampsData.map(s => s.user_id))]
+      const { data: stampProfilesData, error: stampProfilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .in('id', stampUserIds)
+
+      if (stampProfilesError) {
+        console.error('スタンプユーザープロフィール取得エラー:', stampProfilesError)
+      }
+
+      // プロフィールマップ作成
+      const stampProfileMap = new Map()
+      if (stampProfilesData) {
+        stampProfilesData.forEach(profile => {
+          stampProfileMap.set(profile.id, profile)
+        })
+      }
+
+      // 絵文字ごとにグループ化
+      const emojiGroups = new Map<string, NippoStampGroup>()
+
+      stampsData.forEach(stamp => {
+        const profile = stampProfileMap.get(stamp.user_id)
+        const isCurrentUser = user?.id === stamp.user_id
+
+        if (!emojiGroups.has(stamp.emoji)) {
+          emojiGroups.set(stamp.emoji, {
+            emoji: stamp.emoji,
+            count: 0,
+            users: [],
+            hasCurrentUser: false
+          })
+        }
+
+        const group = emojiGroups.get(stamp.emoji)!
+        group.count++
+        group.users.push({
+          id: stamp.user_id,
+          name: profile?.name,
+          email: profile?.email
+        })
+
+        if (isCurrentUser) {
+          group.hasCurrentUser = true
+        }
+      })
+
+      return Array.from(emojiGroups.values())
+    } catch (error) {
+      console.error('スタンプ取得エラー:', error)
+      return []
     }
   }
 
@@ -286,6 +374,13 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
               {nippo.content}
             </ReactMarkdown>
           </div>
+
+          {/* スタンプコンポーネントを追加 */}
+          <NippoStamps
+            nippoId={nippo.id}
+            stamps={nippo.stamps || []}
+            onStampUpdate={fetchNippo}
+          />
         </div>
       </div>
 
