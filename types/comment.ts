@@ -1,4 +1,5 @@
 import { Profile } from './profile';
+import { CommentStampGroup } from './comment-stamp';
 
 export interface Comment {
   id: string;
@@ -11,6 +12,7 @@ export interface Comment {
 
 export interface CommentWithProfile extends Comment {
   profiles?: Profile;
+  stamps?: CommentStampGroup[];
 }
 
 export interface CreateCommentRequest {

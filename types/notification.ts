@@ -1,7 +1,7 @@
 export interface Notification {
   id: string
   user_id: string
-  type: 'comment'
+  type: 'comment' | 'stamp'
   title: string
   message: string
   nippo_id?: string
@@ -12,7 +12,7 @@ export interface Notification {
 
 export interface CreateNotificationRequest {
   user_id: string
-  type: 'comment'
+  type: 'comment' | 'stamp'
   title: string
   message: string
   nippo_id?: string

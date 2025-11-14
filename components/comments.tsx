@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { useAuth } from './auth-provider'
 import { createClient } from '@/lib/supabase-client'
 import { CommentWithProfile, CreateCommentRequest } from '@/types/comment'
+import { CommentStampGroup } from '@/types/comment-stamp'
 import LoginPromptModal from './login-prompt-modal'
+import CommentStamps from './comment-stamps'
 
 interface CommentsProps {
   nippoId: string
@@ -70,13 +72,19 @@ export default function Comments({ nippoId }: CommentsProps) {
         })
       }
 
-      // コメントとプロフィールを結合
+      // スタンプ情報を取得
+      const commentIds = commentsData.map(c => c.id)
+      const stampsData = await fetchStampsForComments(commentIds)
+
+      // コメントとプロフィールとスタンプを結合
       const commentsWithProfiles = commentsData.map(comment => {
         const profile = profileMap.get(comment.user_id)
+        const stamps = stampsData.get(comment.id) || []
         
         return {
           ...comment,
-          profiles: profile || null
+          profiles: profile || null,
+          stamps: stamps
         }
       })
 
@@ -85,6 +93,96 @@ export default function Comments({ nippoId }: CommentsProps) {
       console.error('コメントの取得に失敗しました:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchStampsForComments = async (commentIds: string[]): Promise<Map<string, CommentStampGroup[]>> => {
+    if (commentIds.length === 0) return new Map()
+
+    try {
+      // スタンプデータを取得
+      const { data: stampsData, error: stampsError } = await supabase
+        .from('comment_stamps')
+        .select(`
+          id,
+          comment_id,
+          user_id,
+          emoji,
+          created_at
+        `)
+        .in('comment_id', commentIds)
+        .order('created_at', { ascending: true })
+
+      if (stampsError) {
+        console.error('スタンプデータ取得エラー:', stampsError)
+        return new Map()
+      }
+
+      if (!stampsData || stampsData.length === 0) {
+        return new Map()
+      }
+
+      // スタンプユーザーのプロフィール情報を取得
+      const stampUserIds = [...new Set(stampsData.map(s => s.user_id))]
+      const { data: stampProfilesData, error: stampProfilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .in('id', stampUserIds)
+
+      if (stampProfilesError) {
+        console.error('スタンプユーザープロフィール取得エラー:', stampProfilesError)
+      }
+
+      // プロフィールマップ作成
+      const stampProfileMap = new Map()
+      if (stampProfilesData) {
+        stampProfilesData.forEach(profile => {
+          stampProfileMap.set(profile.id, profile)
+        })
+      }
+
+      // コメントIDごとにスタンプをグループ化
+      const commentStampsMap = new Map<string, CommentStampGroup[]>()
+
+      commentIds.forEach(commentId => {
+        const commentStamps = stampsData.filter(s => s.comment_id === commentId)
+        
+        // 絵文字ごとにグループ化
+        const emojiGroups = new Map<string, CommentStampGroup>()
+        
+        commentStamps.forEach(stamp => {
+          const profile = stampProfileMap.get(stamp.user_id)
+          const isCurrentUser = user?.id === stamp.user_id
+
+          if (!emojiGroups.has(stamp.emoji)) {
+            emojiGroups.set(stamp.emoji, {
+              emoji: stamp.emoji,
+              count: 0,
+              users: [],
+              hasCurrentUser: false
+            })
+          }
+
+          const group = emojiGroups.get(stamp.emoji)!
+          group.count++
+          group.users.push({
+            id: stamp.user_id,
+            name: profile?.name,
+            email: profile?.email
+          })
+
+          if (isCurrentUser) {
+            group.hasCurrentUser = true
+          }
+        })
+
+        commentStampsMap.set(commentId, Array.from(emojiGroups.values()))
+      })
+
+      return commentStampsMap
+    } catch (error) {
+      console.error('スタンプ取得エラー:', error)
+      return new Map()
     }
   }
 
@@ -133,7 +231,8 @@ export default function Comments({ nippoId }: CommentsProps) {
 
       const newCommentWithProfile = {
         ...data,
-        profiles: profileData
+        profiles: profileData,
+        stamps: [] // 新しいコメントにはまだスタンプがない
       }
 
       setComments([...comments, newCommentWithProfile])
@@ -219,25 +318,35 @@ export default function Comments({ nippoId }: CommentsProps) {
           </p>
         ) : (
           comments.map((comment) => (
-            <div key={comment.id} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <div key={comment.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-blue-600 font-medium text-sm">
                       {getUserDisplayName(comment).charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-gray-900 text-sm">
                       {getUserDisplayName(comment)}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs text-gray-500">
                       {formatDate(comment.created_at)}
                     </p>
                   </div>
                 </div>
               </div>
-              <p className="text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+              
+              <div className="ml-11">
+                <p className="text-gray-700 whitespace-pre-wrap mb-2">{comment.content}</p>
+                
+                {/* スタンプコンポーネントを追加 */}
+                <CommentStamps
+                  commentId={comment.id}
+                  stamps={comment.stamps || []}
+                  onStampUpdate={fetchComments}
+                />
+              </div>
             </div>
           ))
         )}
