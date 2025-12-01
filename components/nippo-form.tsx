@@ -291,7 +291,7 @@ export default function NippoForm({ initialData }: NippoFormProps) {
             </ol>
           ),
           li: ({ children }) => (
-            <li className="text-sm text-gray-700">
+            <li className="text-sm text-gray-700 [&>p]:mb-0 [&>p]:inline">
               {children}
             </li>
           ),

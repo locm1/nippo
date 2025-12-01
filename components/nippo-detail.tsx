@@ -348,6 +348,11 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
                     {children}
                   </ol>
                 ),
+                li: ({ children }) => (
+                  <li className="text-gray-700 [&>p]:mb-0 [&>p]:inline">
+                    {children}
+                  </li>
+                ),
                 blockquote: ({ children }) => (
                   <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-4">
                     {children}
