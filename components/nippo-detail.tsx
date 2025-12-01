@@ -231,11 +231,11 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/dashboard')}
               className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>戻る</span>
+              <span>一覧へ戻る</span>
             </button>
 
             {!isSharedView && user && user.id === nippo.user_id && (
