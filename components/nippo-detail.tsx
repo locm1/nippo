@@ -265,16 +265,16 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
             {nippo.title}
           </h1>
 
-          <div className="flex items-center space-x-6 text-sm text-gray-500">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-500">
             <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4" />
+              <Calendar className="h-4 w-4 flex-shrink-0" />
               <span>
                 報告日: {format(new Date(nippo.report_date), 'yyyy年MM月dd日', { locale: ja })}
               </span>
             </div>
             
             <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-4 w-4 flex-shrink-0" />
               <span>
                 作成: {format(new Date(nippo.created_at), 'MM月dd日 HH:mm', { locale: ja })}
               </span>
@@ -282,7 +282,7 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
             
             {nippo.updated_at !== nippo.created_at && (
               <div className="flex items-center space-x-2">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-4 w-4 flex-shrink-0" />
                 <span>
                   更新: {format(new Date(nippo.updated_at), 'MM月dd日 HH:mm', { locale: ja })}
                 </span>
@@ -292,12 +292,12 @@ export default function NippoDetail({ nippoId, isSharedView = false }: NippoDeta
             <div className="flex items-center space-x-2">
               {nippo.is_public ? (
                 <>
-                  <Eye className="h-4 w-4 text-green-600" />
+                  <Eye className="h-4 w-4 text-green-600 flex-shrink-0" />
                   <span className="text-green-600">公開</span>
                 </>
               ) : (
                 <>
-                  <EyeOff className="h-4 w-4 text-gray-400" />
+                  <EyeOff className="h-4 w-4 text-gray-400 flex-shrink-0" />
                   <span>非公開</span>
                 </>
               )}

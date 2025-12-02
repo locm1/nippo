@@ -37,7 +37,7 @@ export default function Header() {
             >
               日報太郎
             </button>
-            <p className="text-gray-500">議事録もおまかせ！</p>
+            <p className="text-gray-500 hidden md:block">議事録もおまかせ！</p>
           </div>
           
           <div className="flex items-center space-x-4">
